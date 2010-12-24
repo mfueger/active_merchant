@@ -12,7 +12,7 @@ module ActiveMerchant #:nodoc:
   module Billing #:nodoc:
     class BraintreeBlueGateway < Gateway
       include BraintreeCommon
-      
+
       self.display_name = 'Braintree (Blue Platform)'
 
       def initialize(options = {})
@@ -177,6 +177,11 @@ module ActiveMerchant #:nodoc:
         end
         parameters[:billing] = map_address(options[:billing_address]) if options[:billing_address]
         parameters[:shipping] = map_address(options[:shipping_address]) if options[:shipping_address]
+
+        # patch, add processor_id and currenncy
+        parameters[:processor_id] = options[:processor_id] if options.has_key? :processor_id
+        parameters[:currency] = options[:currency] if options.has_key? :currency
+
         commit do
           result = Braintree::Transaction.send(transaction_type, parameters)
           response_params, response_options, avs_result, cvv_result = {}, {}, {}, {}
