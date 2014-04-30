@@ -19,6 +19,12 @@ module ActiveMerchant #:nodoc:
             status_code == 'OK'
           end
 
+          # Was the transaction cancelled?
+          # Unfortunately, we can't distinguish "user abort" from "idle too long".
+          def cancelled?
+            status_code == 'ABORT'
+          end
+
           # Text version of #complete?, since we don't support Pending.
           def status
             complete? ? 'Completed' : 'Failed'
@@ -60,7 +66,7 @@ module ActiveMerchant #:nodoc:
 
           # Total amount (no fees).
           def gross
-            params['Amount']
+            params['Amount'].gsub(/,(?=\d{3}\b)/, '')
           end
           
           # AVS and CV2 check results.  Possible values:
