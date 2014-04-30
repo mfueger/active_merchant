@@ -683,6 +683,7 @@ module ActiveMerchant #:nodoc:
                 xml.tag!('amount', transaction[:amount])
                 xml.tag!('customerProfileId', transaction[:customer_profile_id])
                 xml.tag!('customerPaymentProfileId', transaction[:customer_payment_profile_id])
+                tag_unless_blank(xml, 'customerShippingAddressId', transaction[:customer_shipping_address_id])
                 xml.tag!('approvalCode', transaction[:approval_code]) if transaction[:type] == :capture_only
             end
             add_order(xml, transaction[:order]) if transaction[:order].present?
