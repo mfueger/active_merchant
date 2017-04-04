@@ -33,11 +33,55 @@ class RemoteWepayTest < Test::Unit::TestCase
     assert_success response
   end
 
+  def test_successful_purchase_sans_cvv
+    @options[:recurring] = true
+    store = @gateway.store(@credit_card, @options)
+    assert_success store
+
+    response = @gateway.purchase(@amount, store.authorization, @options)
+    assert_success response
+  end
+
+  def test_successful_purchase_with_few_options
+    options = { address: { zip: "27701" }, email: "test@example.com" }
+    response = @gateway.purchase(@amount, @credit_card, options)
+    assert_success response
+    assert_equal 'Success', response.message
+  end
+
+  def test_failed_purchase_sans_ccv
+    @credit_card.verification_value = nil
+    response = @gateway.purchase(@amount, @credit_card, @options)
+    assert_failure response
+  end
+
   def test_failed_purchase_with_token
     response = @gateway.purchase(@amount, "12345", @options)
     assert_failure response
   end
 
+  def test_successful_purchase_with_fee
+    response = @gateway.purchase(@amount, @credit_card, @options.merge(application_fee: 3, fee_payer: "payee"))
+    assert_success response
+    assert_equal 'Success', response.message
+  end
+
+  def test_successful_purchase_with_unique_id
+    response = @gateway.purchase(@amount, @credit_card, @options.merge(unique_id: generate_unique_id))
+    assert_success response
+    assert_equal 'Success', response.message
+  end
+
+  def test_successful_authorize
+    response = @gateway.authorize(@amount, @credit_card, @options)
+    assert_success response
+    assert_equal 'Success', response.message
+  end
+
+  def test_failed_authorize
+    response = @gateway.authorize(@amount, @declined_card, @options)
+    assert_failure response
+  end
   def test_successful_store
     response = @gateway.store(@credit_card, @options)
     assert_success response
